@@ -37,7 +37,6 @@ export const apiHelperService = {
     });
   },
 
-  // ✅ NEW: Send message to a report
   sendMessageToReport: async ({
     reportId,
     sender,
@@ -49,7 +48,7 @@ export const apiHelperService = {
   }) => {
     return apiService({
       method: Api_Methods.POST,
-      endpoint: `/reports/${reportId}/messages`, // Make sure your backend uses this route
+      endpoint: `/reports/${reportId}/messages`, 
       body: {
         sender,
         text,

@@ -39,7 +39,7 @@ interface ReportType {
   createdAt: string;
   updatedAt?: string;
   messages: Message[];
-  imageMeta?: ImageMeta[]; // ✅ Now an array
+  imageMeta?: ImageMeta[]; 
   report_role:string;
   reportedById:string;
 }
@@ -92,12 +92,12 @@ const [activeImage, setActiveImage] = useState<string | null>(null);
         return prev;
       });
     } catch (error) {
-      // silent fail: don't show repeated toast every 5s
+      
       console.error("Polling failed", error);
     }
-  }, 5000); // poll every 5s
+  }, 5000); 
 
-  return () => clearInterval(interval); // cleanup
+  return () => clearInterval(interval); 
 }, [id]);
 
 
@@ -116,7 +116,7 @@ const [activeImage, setActiveImage] = useState<string | null>(null);
 }
 
   try {
-    // Send to API
+    
     await apiHelperService.sendMessageToReport({
       reportId: report?._id,
       sender: "admin",
@@ -124,7 +124,7 @@ const [activeImage, setActiveImage] = useState<string | null>(null);
     });
 
     const newMessage: Message = {
-      id: Math.random().toString(), // You might replace this with API response ID
+      id: Math.random().toString(), 
       sender: "admin",
       text: replyMessage,
       timestamp: new Date().toISOString(),
@@ -140,7 +140,7 @@ const [activeImage, setActiveImage] = useState<string | null>(null);
 
     setReplyMessage("");
 
-    // Optionally update status if desired
+    
     setReport((prev) =>
       prev
         ? { ...prev, status: prev.status === "OPEN" ? "IN_PROGRESS" : prev.status }
