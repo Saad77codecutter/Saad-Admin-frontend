@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { apiHelperService } from "@/services/customTable";
 import { FieldType, FiltersArrayElem, Params } from "./FieldTypes";
 import { CustomTableCell } from "./FieldComponents";
-import FilterTable from "./FilterTable";
+import {FilterTable} from "./FilterTable";
 import { HeaderActionComponent } from "./HeaderActionsComponent";
 import { ToolTip } from "../ToolTip";
 import { TablePagination } from "./Pagination";
@@ -96,7 +96,7 @@ export const CustomTable = ({
 
   useEffect(() => {
     fetchData()
-  }, [selectedFilters, search, page, limit, sortByValue, sortOrder]);
+  }, [fetchData,selectedFilters, search, page, limit, sortByValue, sortOrder]);
 
   useEffect(() => {
     setPage(1);

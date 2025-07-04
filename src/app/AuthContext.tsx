@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { User } from "firebase/auth";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
-
+import { Router } from "lucide-react";
 import { setUser, clearUser } from "@/lib/userSlice";
 import { initializeAxiosWithToken } from "@/lib/axiosinstance";
 import { auth } from "@/config/firebaseConfig";
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => unsubscribe();
-  }, [dispatch]);
+  }, [dispatch,router]);
 
   return (
     <AuthContext.Provider value={{ user, loading }}>

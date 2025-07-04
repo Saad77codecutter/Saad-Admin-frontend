@@ -27,7 +27,7 @@ const Page = () => {
   useEffect(() => {
     if (!userId) return;
     fetchNotes();
-  }, [userId]);
+  }, [userId,fetchNotes]);
 
   const handleCreateNote = async (note: Partial<Note>) => {
     if (!note.title || !note.content || !userId) {
