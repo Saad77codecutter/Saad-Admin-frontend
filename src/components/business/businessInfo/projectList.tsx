@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // For navigation
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -24,16 +24,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ButtonIcon } from "@/components/ui/arrowButton"; // Icon for the eye button
+import { ButtonIcon } from "@/components/ui/arrowButton";
 import { formatID, Messages, StatusEnum } from "@/utils/common/enum";
 import { Badge } from "@/components/ui/badge";
-import {getStatusBadge} from "@/utils/common/utils"
+import { getStatusBadge } from "@/utils/common/utils";
 import CopyButton from "@/components/copybutton";
+
 interface Project {
   _id: string;
   projectName: string;
   description: string;
-  status: StatusEnum; //use enum
+  status: StatusEnum;
   createdAt: string;
   updatedAt: string;
   skillsRequired: string[];
@@ -74,19 +75,19 @@ function ProjectList({ id }: { id: string }) {
     };
 
     fetchProjects();
-  }, [id]);
-  const handleProject = (id: string) => {
-    router.push(`/project/tabs?id=${id}`); // Pass the ID as a query parameter
-  }; 
+  }, [id, toast]);
+
+  const handleProject = (projectId: string) => {
+    router.push(`/project/tabs?id=${projectId}`);
+  };
+
   return (
-    <Card className=" p-4">
-      {" "}
-      {/* Set a max width and full width */}
+    <Card className="p-4">
       <CardHeader>
         <CardTitle>Projects</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table className="w-full text-white bg-black">
+        <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Id</TableHead>
@@ -94,58 +95,60 @@ function ProjectList({ id }: { id: string }) {
               <TableHead>Status</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead>Updated At</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           {loading ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-white text-center">
-                Loading...
-              </TableCell>
-            </TableRow>
+            <TableBody>
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            </TableBody>
           ) : project.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="text-white text-center">
-                No projects found.
-              </TableCell>
-            </TableRow>
+            <TableBody>
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">
+                  No projects found.
+                </TableCell>
+              </TableRow>
+            </TableBody>
           ) : (
             <TableBody>
-              {project.map((project1, index) => (
+              {project.map((project1) => (
                 <TableRow key={project1._id}>
                   <TableCell>
-                        {project1._id ? (
-                          <div className="flex items-center space-x-2">
-                            <Tooltip>
-                              <TooltipTrigger>
-
-                                  {formatID(project1._id|| "")}
-
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {project1._id || "No Data Available"}
-                              </TooltipContent>
-                            </Tooltip>
-                            <CopyButton id={project1._id|| ""} />
-                          </div>
-                        ) : (
-                          "No Data Available"
-                        )}
-                      </TableCell>
+                    {project1._id ? (
+                      <div className="flex items-center space-x-2">
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <span>{formatID(project1._id || "")}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {project1._id || "No Data Available"}
+                          </TooltipContent>
+                        </Tooltip>
+                        <CopyButton id={project1._id || ""} />
+                      </div>
+                    ) : (
+                      "No Data Available"
+                    )}
+                  </TableCell>
                   <TableCell>{project1.projectName}</TableCell>
                   <TableCell>
                     <Badge className={getStatusBadge(project1.status)}>
-                    {project1.status}
+                      {project1.status}
                     </Badge>
-                    </TableCell>
-
+                  </TableCell>
                   <TableCell>
                     {new Date(project1.createdAt).toLocaleString()}
                   </TableCell>
                   <TableCell>
                     {new Date(project1.updatedAt).toLocaleString()}
                   </TableCell>
-                  <TableCell>
-                      <ButtonIcon onClick={()=> handleProject(project1._id)}></ButtonIcon>
+                  <TableCell className="text-right">
+                    <ButtonIcon onClick={() => handleProject(project1._id)} />
                   </TableCell>
                 </TableRow>
               ))}

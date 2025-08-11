@@ -1,3 +1,4 @@
+// your-page-file.tsx (e.g., Talent.tsx or Bids.tsx)
 "use client";
 
 import SidebarMenu from "@/components/menu/sidebarMenu";
@@ -9,7 +10,8 @@ import {
 import Breadcrumb from "@/components/shared/breadcrumbList";
 import DropdownProfile from "@/components/shared/DropdownProfile";
 import { CustomTable } from "@/components/custom-table/CustomTable";
-import { FieldType, Params as TableProps } from "@/components/custom-table/FieldTypes";
+import { FieldType, FilterDataType, Params as TableProps } from "@/components/custom-table/FieldTypes";
+import { BidDetails } from "@/components/bids/BidDetails"; // <-- Import the new component
 
 const customTableProps: TableProps = {
   api: "bid",
@@ -36,6 +38,8 @@ const customTableProps: TableProps = {
       textValue: "Description",
       fieldName: "description",
       type: FieldType.LONGTEXT,
+      width: 500,
+      wordsCnt: 50,
     },
     {
       textValue: "Status",
@@ -62,8 +66,28 @@ const customTableProps: TableProps = {
         },
       ],
     },
+    // The new custom column to open the dialog
+    {
+      textValue: "", // Leave the header text empty for a clean look
+      type: FieldType.CUSTOM,
+      CustomComponent: BidDetails,
+    },
   ],
   isDownload: true,
+  searchColumn: ["current_price", "description"],
+  title: "Bids",
+  filterData: [
+    {
+      name: "bid_status",
+      textValue: "Status",
+      type: FilterDataType.SINGLE,
+      options: [
+        { label: "Accepted", value: "ACCEPTED" },
+        { label: "Pending", value: "PENDING" },
+        { label: "Rejected", value: "REJECTED" },
+      ],
+    },
+  ],
 };
 
 export default function Talent() {

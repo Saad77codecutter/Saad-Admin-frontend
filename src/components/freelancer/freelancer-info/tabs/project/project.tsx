@@ -2,6 +2,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { PackageOpen } from "lucide-react";
+import Link from "next/link"; // Import the Link component
 
 import { Card } from "@/components/ui/card";
 import {
@@ -16,47 +17,87 @@ import { apiHelperService } from "@/services/freelancer";
 import { useToast } from "@/components/ui/use-toast";
 import { Messages } from "@/utils/common/enum";
 
-interface RejectedProject {
+// Define the interface for a single project detail
+interface ProjectDetail {
   _id: string;
+  projectName: string;
+  status: string;
+  // Add other fields you want to display from your project document
 }
 
-interface AcceptedProject {
-  _id: string;
-}
-
-interface PendingProject {
-  _id: string;
-}
-
+// Update UserData to hold arrays of ProjectDetail
 interface UserData {
-  pendingProject: PendingProject[];
-  rejectedProject: RejectedProject[];
-  acceptedProject: AcceptedProject[];
+  pendingProject: ProjectDetail[];
+  rejectedProject: ProjectDetail[];
+  acceptedProject: ProjectDetail[];
 }
 
 interface ProjectProps {
-  id: string; // Added id prop
+  id: string;
 }
 
 const Project: React.FC<ProjectProps> = ({ id }) => {
-  // Use id prop
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response =
-          await apiHelperService.getAllFreelancerPersonalInfo(id);
-        const { pendingProject, rejectedProject, acceptedProject } =
-          response.data;
 
-        setUserData({ pendingProject, rejectedProject, acceptedProject });
+  useEffect(() => {
+    const fetchAllData = async () => {
+      setLoading(true);
+      try {
+        const response = await apiHelperService.getAllFreelancerPersonalInfo(id);
+        const freelancer = response?.data?.data;
+        console.log(freelancer);
+        if (!freelancer) {
+          throw new Error("No freelancer data found");
+        }
+
+        const {
+          pendingProject: pendingProjectIds = [],
+          rejectedProject: rejectedProjectIds = [],
+          acceptedProject: acceptedProjectIds = [],
+        } = freelancer;
+
+        const fetchProjectDetails = async (
+          projectIds: string[]
+        ): Promise<ProjectDetail[]> => {
+          if (projectIds.length === 0) {
+            return [];
+          }
+          const projectPromises = projectIds.map((projectId) =>
+            apiHelperService.getProjectbyId(projectId).then((res) => res.data.data)
+          );
+          const projects = await Promise.all(projectPromises);
+          console.log(projects);
+          return projects;
+        };
+
+        const detailedPendingProjects = await fetchProjectDetails(
+          pendingProjectIds
+        );
+        const detailedRejectedProjects = await fetchProjectDetails(
+          rejectedProjectIds
+        );
+        const detailedAcceptedProjects = await fetchProjectDetails(
+          acceptedProjectIds
+        );
+
+        setUserData({
+          pendingProject: detailedPendingProjects,
+          rejectedProject: detailedRejectedProjects,
+          acceptedProject: detailedAcceptedProjects,
+        });
       } catch (error) {
+        console.error("Failed to fetch project data:", error);
         toast({
           title: "Error",
           description: Messages.FETCH_ERROR("project"),
-          variant: "destructive", // Red error message
+          variant: "destructive",
+        });
+        setUserData({
+          pendingProject: [],
+          rejectedProject: [],
+          acceptedProject: [],
         });
       } finally {
         setLoading(false);
@@ -64,19 +105,41 @@ const Project: React.FC<ProjectProps> = ({ id }) => {
     };
 
     if (id) {
-      fetchUserData();
+      fetchAllData();
     }
-  }, [id]); // Depend on id
+  }, [id, toast]);
+
+  // Helper function to render project rows
+  const renderProjectRows = (projects: ProjectDetail[], status: string) => {
+    if (!projects) return null;
+
+    return projects
+      .filter((project) => project != null && project.projectName)
+      .map((project) => (
+        <TableRow key={project._id}>
+          <TableCell>
+            {/* Use the Link component for routing */}
+            <Link
+              href={`/project/tabs?id=${project._id}`}
+              className="text-blue-600 hover:underline dark:text-blue-400"
+            >
+              {project.projectName}
+            </Link>
+          </TableCell>
+          <TableCell>{status}</TableCell>
+        </TableRow>
+      ));
+  };
 
   return (
-    <div className="px-">
+    <div className="px-4">
       <div className="mb-8 mt-4">
         <Card>
           <div className="lg:overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Id</TableHead>
+                  <TableHead>Project Name</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -84,31 +147,17 @@ const Project: React.FC<ProjectProps> = ({ id }) => {
                 {loading ? (
                   <TableRow>
                     <TableCell colSpan={2} className="text-center">
-                      Loading...
+                      Loading projects...
                     </TableCell>
                   </TableRow>
-                ) : userData ? (
+                ) : userData &&
+                  (userData.pendingProject.length > 0 ||
+                    userData.rejectedProject.length > 0 ||
+                    userData.acceptedProject.length > 0) ? (
                   <>
-                    {userData.pendingProject.map((pending) => (
-                      <TableRow key={pending._id}>
-                        <TableCell>Skill</TableCell>
-                        <TableCell>{pending._id}</TableCell>
-                        <TableCell>Pending</TableCell>
-                      </TableRow>
-                    ))}
-                    {userData.rejectedProject.map((rejected) => (
-                      <TableRow key={rejected._id}>
-                        <TableCell>Domain</TableCell>
-                        <TableCell>{rejected._id}</TableCell>
-                        <TableCell>Rejected</TableCell>
-                      </TableRow>
-                    ))}
-                    {userData.acceptedProject.map((accepted) => (
-                      <TableRow key={accepted._id}>
-                        <TableCell>{accepted._id}</TableCell>
-                        <TableCell>Accepted</TableCell>
-                      </TableRow>
-                    ))}
+                    {renderProjectRows(userData.pendingProject, "Pending")}
+                    {renderProjectRows(userData.rejectedProject, "Rejected")}
+                    {renderProjectRows(userData.acceptedProject, "Accepted")}
                   </>
                 ) : (
                   <TableRow>
@@ -116,13 +165,12 @@ const Project: React.FC<ProjectProps> = ({ id }) => {
                       <div className="text-center py-10 w-full mt-10">
                         <PackageOpen
                           className="mx-auto text-gray-500"
-                          size="100"
+                          size={100}
                         />
                         <p className="text-gray-500">
-                          No data available.
-                          <br /> This feature will be available soon.
-                          <br />
-                          Here you can get directly hired for different roles.
+                          No projects found.
+                          <br /> You haven't been assigned or applied to any
+                          projects yet.
                         </p>
                       </div>
                     </TableCell>

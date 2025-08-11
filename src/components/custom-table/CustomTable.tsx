@@ -78,8 +78,9 @@ export const CustomTable = ({
 
         params["filter[sortBy]"] = sortByValue;
         params["filter[sortOrder]"] = sortOrder;
-
+        console.log(params)
         const response = await apiHelperService.fetchData(api, params);
+        console.log(response.data)
         setData(response.data.data);
       } catch (error) {
         console.log(error);
@@ -233,6 +234,7 @@ export const CustomTable = ({
                           key={field.fieldName}
                           className={twMerge("text-gray-900 dark:text-gray-300", field.className)}
                           width={field.width}
+                          
                         >
                           <CustomTableCell
                             fieldData={field}
